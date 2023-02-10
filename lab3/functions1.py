@@ -175,6 +175,7 @@ def guess_the_number():
         guess=int(input())
         if number==guess:
             print("Good job, KBTU! You guessed my number",gue, "in guesses!")
+            break
         elif guess<number:
             gue+=1
             print("Your guess is too low.")

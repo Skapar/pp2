@@ -8,3 +8,9 @@ def forik(x):
                 return False
     return True
 
+def filter_prime(listik):
+    b=[]
+    for x in listik:
+        if forik(x):
+            b.append(x)
+    return b   

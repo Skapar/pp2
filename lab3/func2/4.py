@@ -75,3 +75,12 @@ movies = [
 "category": "Romance"
 }
 ]
+# 4 task
+def list_movies(listik):
+    sum=0
+    for i in listik:
+        sum+=i['imdb']
+
+    return sum/len(listik)
+    
+# print(list_movies(movies))

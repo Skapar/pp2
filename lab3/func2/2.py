@@ -75,3 +75,14 @@ movies = [
 "category": "Romance"
 }
 ]
+# 2 task
+def sublist_movies(dict):
+    b=[]
+    for i in dict:
+        if i['imdb']>5.5:
+            b.append(i['name'])
+    return b
+
+
+# sublist_movies(movies)
+# print(sublist_movies(movies))

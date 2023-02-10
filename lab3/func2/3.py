@@ -75,3 +75,12 @@ movies = [
 "category": "Romance"
 }
 ]
+# 3 task
+def category_movies(name):
+    b=[]
+    for i in movies:
+        if i['category']==name:
+            b.append(i['name'])
+    return b
+
+# print(category_movies('Romance'))
