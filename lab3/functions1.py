@@ -3,7 +3,6 @@ import itertools
 from itertools import permutations
 from random import randrange
 
-
 #1st task
 def conv(gramm):
     return gramm*28.3495231
@@ -149,7 +148,7 @@ def palindrome(s):
 
 # print(palindrome(str(input())))
 
-# ------------------------------------------
+# --------------------------------------
 
 # 12 task
 def histogram(list):
@@ -161,7 +160,7 @@ def histogram(list):
 
 # histogram([4, 9, 7])
 
-# ------------------------------
+# -------------------------------------
 #13 task
 def guess_the_number():
     gue=0
