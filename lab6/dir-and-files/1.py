@@ -1,9 +1,17 @@
 import os
-b=r'C:\Users\Lenovo\Desktop'
-a=[]
-for x in os.listdir(b):
-    if os.path.isfile(os.path.join(b, x)):
-        a.append(x)
 
-for i in a:
-    print(a)
+path = r'C:\Users\Lenovo\Desktop'
+
+for i in os.listdir(path):
+    if os.path.isdir(os.path.join(path,i)):
+        print(i)
+print('------------------------------------------------------------------\n')
+
+for i in os.listdir(path):
+    if not os.path.isdir(os.path.join(path,i)):
+        print(i)
+
+print('------------------------------------------------------------------\n')
+
+for i in os.listdir(path):
+    print(i)
