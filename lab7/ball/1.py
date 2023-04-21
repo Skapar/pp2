@@ -8,7 +8,7 @@ pygame.display.set_caption("Ball")
 ball_color = (255, 0, 0)
 ball_radius = 25
 ball_position = [screen.get_width() // 2, screen.get_height() // 2]
-ball_speed = 20
+ball_speed = 40
 
 def draw_ball():
     pygame.draw.circle(screen, ball_color, ball_position, ball_radius)

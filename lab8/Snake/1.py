@@ -73,7 +73,7 @@ class Snake:
         if self.body[0][0] == f.x and self.body[0][1] == f.y: # если координаты головы змейки совпадают с координатами еды
             self.score += 1
             pygame.mixer.Sound('eat.mp3').play()
-            self.body.append([1000, 1000]) 
+            self.body.append([35000, 3500]) 
     
     # заканчиваем игру, если голова змейки столкнеться со своим телом
     def self_collide(self):
