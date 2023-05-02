@@ -2,12 +2,7 @@ import psycopg2
 from config import *
 
 #connecting to our database
-conn = psycopg2.connect(
-    host=host,
-    user=user,
-    password=password,
-    database=database
-)
+conn = psycopg2.connect(**params)
 
 #creating table for user if not exists
 conn.autocommit = True

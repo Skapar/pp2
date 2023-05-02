@@ -15,7 +15,7 @@ cur = conn.cursor()
 # Insert data into phonebook table (option 1: from CSV file)
 def insert_from_csv(filename):
     with open(filename, 'r') as f:
-        reader = csv.reader(f, delimiter=';')
+        reader = csv.reader(f, delimiter=',')
         for row in reader:
             name, number = row
             cur.execute(

@@ -1,5 +1,7 @@
-database='snake' 
-user = 'postgres' 
-host = 'localhost'
-port = 5432, 
-password = 'skapar123'
+params = {
+    "host": "localhost",
+    "port": 5432,
+    "database": "snake",
+    "user": "postgres",
+    "password": "skapar123"
+}

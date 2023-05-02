@@ -1,53 +1,48 @@
 import pygame
-import psycopg2
 from random import randint, randrange
+import psycopg2
 from config import *
+
+config = psycopg2.connect(**params)
+current = config.cursor()
+username = input('enter your name: ')
+current.execute("SELECT id, level FROM snake_user WHERE username = %s", (username,))
+result = current.fetchone()
+#result = None
+
+if result is not None:
+    user_id, level = result
+    print("Welcome back, {}! Your current level is {}.".format(username, level))
+else:
+    # create a new user
+    current.execute("INSERT INTO snake_user (username) VALUES (%s) RETURNING id", (username,))
+    user_id = current.fetchone()[0]
+    level = 1
+    print("Welcome, {}! You are starting at level {}.".format(username, level))
+
 pygame.init()
 
-conn = psycopg2.connect(
-    host=host,
-    user=user,
-    password=password,
-    database=database
-)
-
-cur = conn.cursor()
-# Get user input for username
-username = input("Enter your username: ")
-cur.execute("SELECT id FROM users WHERE username=%s", (username,))
-user = cur.fetchone()
-
-if user is not None:
-    print(f"Welcome back, {username}, !")
-    # TODO: Show current level
-
-else:
-    cur.execute("INSERT INTO users (username) VALUES (%s) RETURNING id", (username,))
-    user_id = cur.fetchone()[0]
-    print("Welcome to the game!")
-
-w, h, fps, level, step = 800, 800, 10, 0, 40 # разделяем окно на 400 квадратиков, 20 на 20
+w, h = 800, 800
+fps, level, step = 5, 0, 40
 screen = pygame.display.set_mode((w, h))
 pygame.display.set_caption('Snake Game')
 is_running, lose = True, False
 clock = pygame.time.Clock()
-score = pygame.font.SysFont("Verdana", 20)
+score1 = pygame.font.SysFont("Verdana", 20)
 surf = pygame.Surface((390, 390), pygame.SRCALPHA)
 
 gameover = pygame.image.load("gameover.jpg")
 gameover = pygame.transform.scale(gameover, (390, 390))
-time = 5000
+
 flag = False
-allscore = 0
-pygame.mixer.init()
 
 class Food:
-    def __init__(self, im):
-        # задаем рандомные координаты для еды в диапазоне игрового поля с шагом в 40
+    def __init__(self,im):
         self.x = randrange(0, w, step)
         self.y = randrange(0, h, step)
         self.r = 0
-        self.image = im 
+        self.image = im
+
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
 
@@ -57,19 +52,19 @@ class Food:
         self.r = randint(1,2)
         self.image = pygame.image.load(f'food{self.r}.png')
 
+
 class Snake:
     def __init__(self):
         self.speed = step
-        self.body = [[360, 360]] # изначальные координаты головы
+        self.body = [[360, 360]]  #изначальные координаты головы
         self.dx = 0
         self.dy = 0
         self.score = 0
-        self.allscore = 0
         self.color = 'green'
-    
+
     def move(self, events):
         for event in events:
-            if event.type == pygame.KEYDOWN: # движение змейки по нажатию на клавиатуру
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a and self.dx == 0: # чтобы при нажатии налево, змейка не двигалась вправо
                     self.dx = -self.speed
                     self.dy = 0
@@ -85,37 +80,34 @@ class Snake:
 
         # передвигаем части тела змейки по х и у на предыдущие координаты
         for i in range(len(self.body) - 1, 0, -1):
-            self.body[i][0] = self.body[i - 1][0] 
+            self.body[i][0] = self.body[i - 1][0]
             self.body[i][1] = self.body[i - 1][1]
 
         # передвигаем голову змейки по х и у на следующие координаты
-        self.body[0][0] += self.dx 
-        self.body[0][1] += self.dy 
+        self.body[0][0] += self.dx
+        self.body[0][1] += self.dy
 
     def draw(self):
         for part in self.body:
             pygame.draw.rect(screen, self.color, (part[0], part[1], step, step))
+
     # проверяем когда змейка съедает еду
     def collide_food(self, Food):
         if self.body[0][0] == f.x and self.body[0][1] == f.y: # если координаты головы змейки совпадают с координатами еды
-            pygame.mixer.Sound('eat.mp3').play()
-            self.score += f.r
-            global flag,allscore
-            allscore +=f.r
+            self.score += 1
+            global flag
             flag = True
-            self.body.append([1000, 1000]) 
-    
+            self.body.append([1000, 1000])
+
     # заканчиваем игру, если голова змейки столкнеться со своим телом
     def self_collide(self):
         global is_running
         if self.body[0] in self.body[1:]: # если голова змейки и входит в массив координат тела змейки
-            lose = True # запускаем цикл 'game_over' 
-            pygame.mixer.music.stop()
-            pygame.mixer.Sound('gameover.wav').play()
-            pygame.mixer.music.stop()
+            lose = True # запускаем цикл 'game_over'
+
 
     # проверяем чтобы еда не оказалась на теле змейки
-    def check_food(self, f:Food): 
+    def check_food(self, Food):
         if [f.x, f.y] in self.body: # если координаты еды входят в массив координат тела змейки
             f.draw2() # заново рисуем еду
 
@@ -123,41 +115,36 @@ class Snake:
 class Wall:
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self.pic = pygame.image.load("239enh3j3hdb.ZzJkp.jpg")
+        self.pic = pygame.image.load("1.jpg")
 
 
     def draw(self):
         screen.blit(self.pic, (self.x, self.y))
-
 def disappear(t):
     pygame.time.set_timer(pygame.USEREVENT, t)
-    
+
 # создаем объекты змейки и еды
 s = Snake()
 f = Food(pygame.image.load(f'food{randint(1,2)}.png'))
 disappear(5000)
 
-def save_score(score):
-    cur.execute("INSERT INTO user_score (user_id, score) VALUES (%s, %s)", (user_id, score))
-    conn.commit()
-    print("Score saved!")
-def save_ifexist(score, user):
-    if user == True:
-        cur.execute("UPDATE user_score (user_id, score) VALUES (%s, %s)",(user_id, score))
 # запускаем основной цикл
 while is_running:
     clock.tick(fps)
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
-            save_score(allscore)
             is_running = False
+        if event.type == pygame.KEYDOWN:
+                if event.type == pygame.K_ESCAPE:
+                    is_running = False
         if event.type == pygame.USEREVENT and flag == False: # еда появляется каждые пять секунд
             f.draw2() # через 5 секунд перерисовывется
 
-    screen.fill((5,25,5))
 
-    # прорисовываем стенки с помощью заранее написанных паттернов  
+    screen.fill((5, 25, 5))
+
+    # прорисовываем стенки с помощью заранее написанных паттернов
     my_walls = open(f'wall{level}.txt', 'r').readlines() # читает каждую линию как отдельный лист
     walls = []
     for i, line in enumerate(my_walls): # проходимся по индексу и строке
@@ -174,18 +161,17 @@ while is_running:
     s.check_food(f)
 
     # высвечиваем текущие баллы и уровень на экран
-    counter = score.render(f'Score: {s.score}', True, 'white')
+    counter = score1.render(f'Score: {s.score}', True, 'white')
     screen.blit(counter, (50, 50))
-    l = score.render(f'Level: {level}', True, 'white')
+    l = score1.render(f'Level: {level}', True, 'white')
     screen.blit(l, (50, 80))
 
     # условие для перехода на следующий уровень
-    if s.score >= 3:
-        pygame.mixer.Sound('lvlup.mp3').play()
-        level += 1 # увеличиваем уровень
-        level %= 4 
-        fps += 2 # увеличиваем скорость
-        s.score = 0 # новый счетчик для следующего уровня
+    if s.score % 5 == 0:
+        level += 1
+        level %= 4
+        fps += 2
+        s.score += 3 # новый счетчик для следующего уровня
 
     # высвечиваем стенки на экран
     for wall in walls:
@@ -195,32 +181,47 @@ while is_running:
 
         if s.body[0][0] == wall.x and s.body[0][1] == wall.y: # останавливаем игру, если голова змейки столкнеться со стенкой
             lose = True
-            pygame.mixer.music.stop()
-            pygame.mixer.Sound('gameover.wav').play()
-            pygame.mixer.music.stop()
-    if flag == True: # если мы съедаем еду, она заново перерисовывается и она заново будет стоять 5 секунд
-        time = 5000
-        disappear(time)
-        f.draw2() 
-        flag = False
+
+
     # запускаем цикл 'game_over'
     while lose:
         clock.tick(fps)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_running = False
-                lose = False 
-        all = score.render(f'Your ALLLscore is {s.allscore}', True, 'white')
-        screen.blit(all, (440, 505))
+                lose = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    '''
+                    if s.score == 1:
+                        score = 100
+                    elif s.score == 2:
+                        score = 200
+                    elif s.score == 3:
+                        score = 300
+                    else: score = 0
+                    '''
+                    current.execute("INSERT INTO score (user_id, score, level) VALUES (%s, %s, %s)",
+                                    (user_id, s.score, level))
+                    config.commit()
+                    print("Score saved at level {}!".format(level))
+
+
+                    # pause the game
+                    paused = True
+                    while paused:
+                        for event in pygame.event.get():
+                            if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_p:
+                                    paused = False
+
         surf.blit(gameover, (0, 0))
         screen.blit(surf, (200, 200))
-        cntr = score.render(f'Your score is {s.score}', True, 'white')
+        cntr = score1.render(f'Your score is {s.score}', True, 'white')
         screen.blit(cntr, (320, 405))
-        l = score.render(f'Your level is {level}', True, 'white')
+        l = score1.render(f'Your level is {level}', True, 'white')
         screen.blit(l, (322, 435))
-        all = score.render(f'Your all score is {allscore}', True, 'white')
-        screen.blit(all, (315, 465))
         pygame.display.flip()
-
     pygame.display.flip()
 pygame.quit()
